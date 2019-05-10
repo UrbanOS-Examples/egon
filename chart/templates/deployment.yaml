@@ -1,52 +1,56 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Chart.Name }}
-  namespace: {{ .Release.Namespace }}
+  name: {{ include "helm.fullname" . }}
   labels:
-    helm.sh/chart: {{ include "egon.chart" . }}
-    app.kubernetes.io/name: {{ include "egon.name" . }}
+    app.kubernetes.io/name: {{ include "helm.name" . }}
+    helm.sh/chart: {{ include "helm.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  serviceAccountName: egon
-  replicas: {{ .Values.egon.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "egon.name" . }}
+      app.kubernetes.io/name: {{ include "helm.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "egon.name" . }}
+        app.kubernetes.io/name: {{ include "helm.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
-      serviceAccountName: {{ .Chart.Name }}
-      imagePullSecrets:
-      - name: regcred
       containers:
-      - name: {{ .Chart.Name }}
-        image: {{ .Values.egon.image.repository }}:{{ .Values.egon.image.tag }}
-        imagePullPolicy: {{ .Values.egon.image.pullPolicy }}
-        resources:
-          limits:
-            memory: 1Gi
-            cpu: 300m
-          requests:
-            memory: 1Gi
-            cpu: 300m
-        env:
-        - name: KAFKA_BROKERS
-          value: {{ .Values.kafka.brokers }}
-        - name: REDIS_HOST
-          value: {{ .Values.redis.host }}
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: NODE_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.podIP
-      volumes:
-      - name: download-dir
-        emptyDir: {}
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: KAFKA_BROKERS
+            value: {{ .Values.kafka.brokers }}
+          - name: PRESTO_URL
+            value: {{ .Values.presto.url }}
+          - name: PRESTO_USER
+            value: {{.Values.presto.user}}
+          - name: REDIS_HOST
+            value: {{ .Values.redis.host }}
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
