@@ -1,39 +1,39 @@
 library(
-    identifier: 'pipeline-lib@4.3.6',
+    identifier: 'pipeline-lib@4.3.4',
     retriever: modernSCM([$class: 'GitSCMSource',
                           remote: 'https://github.com/SmartColumbusOS/pipeline-lib',
                           credentialsId: 'jenkins-github-user'])
 )
 
 properties([
-    pipelineTriggers([scos.dailyBuildTrigger()]),
+    pipelineTriggers([scos.dailyBuildTrigger('10-12')]), //UTC
 ])
 
 def image
-def imageName = "scos/egon"
+
 def doStageIf = scos.&doStageIf
 def doStageIfRelease = doStageIf.curry(scos.changeset.isRelease)
 def doStageUnlessRelease = doStageIf.curry(!scos.changeset.isRelease)
 def doStageIfPromoted = doStageIf.curry(scos.changeset.isMaster)
 
-node ('infrastructure') {
+node('infrastructure') {
     ansiColor('xterm') {
         scos.doCheckoutStage()
 
-        imageTag = "${env.GIT_COMMIT_HASH}"
-
         doStageUnlessRelease('Build') {
             withCredentials([string(credentialsId: 'hex-read', variable: 'HEX_TOKEN')]) {
-                image = docker.build("${imageName}:${imageTag}", '--build-arg HEX_TOKEN=$HEX_TOKEN .')
+                image = docker.build("scos/egon:${env.GIT_COMMIT_HASH}", '--build-arg HEX_TOKEN=$HEX_TOKEN .')
 
                 sh('''
-                export HOST_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
-                mix local.hex --force
-                mix local.rebar --force
-                mix hex.organization auth smartcolumbus_os --key $HEX_TOKEN
-                mix deps.get
+                    export HOST_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
+                    mix local.hex --force
+                    mix local.rebar --force
+                    mix hex.organization auth smartcolumbus_os --key $HEX_TOKEN
+                    mix deps.get
+                    mix test.integration
                 ''')
             }
+
         }
 
         doStageUnlessRelease('Deploy to Dev') {
@@ -41,13 +41,14 @@ node ('infrastructure') {
                 image.push()
                 image.push('latest')
             }
-            deployegonTo(environment: 'dev', tag: imageTag)
+
+            deployTo('dev')
         }
 
-        doStageIfPromoted('Deploy to Staging')  {
+        doStageIfPromoted('Deploy to Staging') {
             def environment = 'staging'
 
-            deployegonTo(environment: environment, tag: imageTag)
+            deployTo(environment)
 
             scos.applyAndPushGitHubTag(environment)
 
@@ -58,30 +59,30 @@ node ('infrastructure') {
 
         doStageIfRelease('Deploy to Production') {
             def releaseTag = env.BRANCH_NAME
-            def promotionTag = 'prod'
+            def environment = 'prod'
 
-            deployegonTo(environment: 'prod', tag: imageTag)
+            deployTo(environment)
 
-            scos.applyAndPushGitHubTag(promotionTag)
+            scos.applyAndPushGitHubTag(environment)
 
             scos.withDockerRegistry {
-                image = scos.pullImageFromDockerRegistry(imageName, env.GIT_COMMIT_HASH)
+                image = scos.pullImageFromDockerRegistry("scos/egon", env.GIT_COMMIT_HASH)
                 image.push(releaseTag)
-                image.push(promotionTag)
+                image.push(environment)
             }
         }
     }
 }
 
-def deployegonTo(params = [:]) {
-    def extraVars = [
-      'image_tag': params.get('tag')
-    ]
-    def environment = params.get('environment')
-    if (environment == null) throw new IllegalArgumentException("environment must be specified")
-
-    def terraform = scos.terraform(environment)
-    sh "terraform init && terraform workspace new ${environment}"
-    terraform.plan(terraform.defaultVarFile, extraVars)
-    terraform.apply()
+def deployTo(environment) {
+    scos.withEksCredentials(environment) {
+        sh("""#!/bin/bash
+            set -e
+            helm init --client-only
+            helm upgrade --install egon \
+                ./chart \
+                --namespace=default \
+                --set image.tag="${env.GIT_COMMIT_HASH}" \
+        """.trim())
+    }
 }
