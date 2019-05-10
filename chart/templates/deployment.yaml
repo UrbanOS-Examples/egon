@@ -30,27 +30,13 @@ spec:
         resources:
           limits:
             memory: 1Gi
-            cpu: 1.5
-            ephemeral-storage: 50G
+            cpu: 300m
           requests:
             memory: 1Gi
-            cpu: 1
-            ephemeral-storage: 25G
-        ports:
-        - containerPort: 9001
-        - containerPort: 4369
-        volumeMounts:
-        - mountPath: /downloads
-          name: download-dir
+            cpu: 300m
         env:
-        - name: TO_TOPIC
-          value: {{ .Values.egon.to_topic }}
-        - name: DLQ_TOPIC
-          value: {{ .Values.egon.dlq_topic }}
         - name: KAFKA_BROKERS
-          value: {{ .Values.strimzi.kafka.brokers | default (include "kafka.brokerservice" .) }}
-        - name: RUN_IN_KUBERNETES
-          value: "true"
+          value: {{ .Values.kafka.brokers }}
         - name: REDIS_HOST
           value: {{ .Values.redis.host }}
         - name: NAMESPACE

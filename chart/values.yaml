@@ -10,3 +10,8 @@ egon:
 
 redis:
   host: redis.external-services
+
+kafka:
+  #comma delimited list of kafka seed brokers
+  brokers: streaming-service-kafka-bootstrap.streaming-prime:9092
+  strimziCluster: streaming-service
