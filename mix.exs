@@ -15,7 +15,7 @@ defmodule Egon.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {Reaper.Application, []}
+      mod: {Egon.Application, []}
     ]
   end
 
