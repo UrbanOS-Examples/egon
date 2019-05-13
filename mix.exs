@@ -24,6 +24,10 @@ defmodule Egon.MixProject do
     [
       {:distillery, "~> 2.0"},
       {:redix, "~> 0.9.3"},
+      {:jason, "~>1.1"},
+      {:tesla, "~> 1.2"},
+      {:kaffe, "~> 1.11"},
+      {:prestige, "~> 0.2.0", organization: "smartcolumbus_os"},
       {:credo, "~> 1.0", only: [:dev, :test, :integration], runtime: false}
     ]
   end

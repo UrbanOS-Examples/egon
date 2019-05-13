@@ -25,3 +25,8 @@ config :smart_city_registry,
 
 config :redix,
   host: redis_host
+
+config :kaffe,
+  producer: [
+    endpoints: endpoints
+  ]
