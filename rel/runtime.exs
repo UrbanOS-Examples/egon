@@ -1,6 +1,6 @@
 use Mix.Config
 
-required_envars = ["REDIS_HOST", "KAFKA_BROKERS"]
+required_envars = ["REDIS_HOST", "KAFKA_BROKERS", "PRESTO_URL"]
 
 Enum.each(required_envars, fn var ->
   if is_nil(System.get_env(var)) do
@@ -10,6 +10,12 @@ end)
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 redis_host = System.get_env("REDIS_HOST")
+
+presto_url = System.get_env("PRESTO_URL") |> IO.inspect(label: "PRESTO URL")
+
+if presto_url == nil do
+  raise ArgumentError, message: "Undefined PRESTO_URL environment variable!"
+end
 
 endpoints =
   kafka_brokers
@@ -31,3 +37,6 @@ config :kaffe,
     topics: ["streaming-dead-letters"],
     endpoints: endpoints
   ]
+
+config :prestige,
+  base_url: presto_url
