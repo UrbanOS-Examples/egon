@@ -28,6 +28,6 @@ config :redix,
 
 config :kaffe,
   producer: [
-    topics: ["streaming-dead-letters"]
+    topics: ["streaming-dead-letters"],
     endpoints: endpoints
   ]
