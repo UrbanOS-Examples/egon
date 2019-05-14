@@ -1,6 +1,6 @@
 defmodule Egon.Redis.Dataset do
   @moduledoc false
-  def purge(dataset_id, limit \\ 0) do
+  def purge(dataset_id, limit \\ 10) do
     keys = Redix.command!(:redix, ["KEYS", "*#{dataset_id}*"])
 
     if length(keys) <= limit do
