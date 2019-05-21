@@ -5,8 +5,9 @@ defmodule PressurizerTest do
   @endpoint Application.get_env(:kaffe, :producer)[:endpoints]
 
   setup_all do
-    {:ok, dataset_id} =
-      SmartCity.TestDataGenerator.create_dataset(%{id: "12345"})
+    {:ok, _} =
+      %{id: "12345"}
+      |> SmartCity.TestDataGenerator.create_dataset()
       |> SmartCity.Dataset.write()
 
     :ok

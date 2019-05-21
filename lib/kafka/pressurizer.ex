@@ -1,4 +1,5 @@
 defmodule Egon.Kafka.Pressurizer do
+  @moduledoc false
   def pressurize(dataset, topic, messages, chunk \\ 1) do
     Stream.repeatedly(fn -> Egon.Data.Generator.generate(dataset.technical.schema) end)
     |> Stream.map(fn message ->
