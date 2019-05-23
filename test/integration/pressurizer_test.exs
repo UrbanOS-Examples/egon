@@ -13,50 +13,48 @@ defmodule PressurizerTest do
     :ok
   end
 
-  test "egon produces to a topic" do
+  test "egon produces a small amount of data to a topic" do
     dataset_id = @dataset_id
 
     dataset_id
     |> SmartCity.Dataset.get!()
-    |> Egon.Kafka.Pressurizer.pressurize("streaming-raw", 5)
+    |> Egon.Kafka.Pressurizer.pressurize("streaming-raw", 1, 5)
 
-    assert any_messages_where("streaming-raw", fn message ->
-             message.dataset_id == dataset_id
-           end)
+    assert number_of_messages("streaming-raw", 5)
   end
 
-  defp any_messages_where(topic, callback) do
+  test "egon produces a medium amount of data to a topic" do
+    dataset_id = @dataset_id
+
+    dataset_id
+    |> SmartCity.Dataset.get!()
+    |> Egon.Kafka.Pressurizer.pressurize("streaming-validated", 10, 10)
+
+    assert number_of_messages("streaming-validated", 100)
+  end
+
+  defp number_of_messages(topic, number_expected) do
     :ok ==
       Patiently.wait_for!(
         fn ->
-          topic
-          |> fetch_and_unwrap()
-          |> Enum.any?(callback)
+          message_count =
+            topic
+            |> fetch_and_unwrap()
+            |> Enum.count()
+            |> IO.inspect(label: "pressurizer_test.exs:34")
+
+          message_count == number_expected
         end,
-        dwell: 1000,
+        dwell: 2000,
         max_tries: 10
       )
   end
 
-  defp messages_as_expected(topic, expected, callback) do
-    Patiently.wait_for!(
-      fn ->
-        actual =
-          topic
-          |> fetch_and_unwrap()
-          |> Enum.map(callback)
-
-        IO.puts("Waiting for actual #{inspect(actual)} to match expected #{inspect(expected)}")
-
-        actual == expected
-      end,
-      dwell: 1000,
-      max_tries: 10
-    )
-  end
-
   defp fetch_and_unwrap(topic) do
     {:ok, messages} = :brod.fetch(@endpoint, topic, 0, 0)
+    {:ok, messages2} = :brod.fetch(@endpoint, topic, 0, Enum.count(messages))
+
+    messages = messages ++ messages2
 
     messages
     |> Enum.map(fn {:kafka_message, _, _, _, key, body, _, _, _} ->

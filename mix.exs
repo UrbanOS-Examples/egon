@@ -30,7 +30,7 @@ defmodule Egon.MixProject do
       {:smart_city_data, "~> 2.1"},
       {:smart_city_registry, "~> 2.6"},
       {:smart_city_test, "~> 0.2.0"},
-      {:prestige, "~> 0.2.0", organization: "smartcolumbus_os"},
+      {:prestige, "~> 0.3"},
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1", only: [:dev, :integration]},
