@@ -18,7 +18,7 @@ defmodule PressurizerTest do
 
     dataset_id
     |> SmartCity.Dataset.get!()
-    |> Egon.Kafka.Pressurizer.pressurize("streaming-raw", 1, 5)
+    |> Egon.Kafka.Pressurizer.pressurize("streaming-raw", 5, 5)
 
     assert number_of_messages("streaming-raw", 5)
   end
@@ -28,7 +28,7 @@ defmodule PressurizerTest do
 
     dataset_id
     |> SmartCity.Dataset.get!()
-    |> Egon.Kafka.Pressurizer.pressurize("streaming-validated", 10, 10)
+    |> Egon.Kafka.Pressurizer.pressurize("streaming-validated", 100, 10)
 
     assert number_of_messages("streaming-validated", 100)
   end
