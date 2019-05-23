@@ -5,7 +5,8 @@ defmodule Egon.Kafka.Pressurizer do
   Pressurize takes a full SmartCity dataset, a name of a topic, a number of messages to send, and an optional chunk size to produce them in.
   """
   def pressurize(dataset, topic, message_count, chunk_size \\ 100) do
-    Stream.take(1..message_count, message_count)
+    1..message_count
+    |> Stream.take(message_count)
     |> Stream.map(fn _ -> Egon.Data.Generator.generate(dataset.technical.schema) end)
     |> Stream.map(fn message ->
       SmartCity.TestDataGenerator.create_data(%{dataset_id: dataset.id, payload: message})

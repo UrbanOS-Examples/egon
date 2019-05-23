@@ -41,7 +41,6 @@ defmodule PressurizerTest do
             topic
             |> fetch_and_unwrap()
             |> Enum.count()
-            |> IO.inspect(label: "pressurizer_test.exs:34")
 
           message_count == number_expected
         end,
