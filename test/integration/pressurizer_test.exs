@@ -4,6 +4,11 @@ defmodule PressurizerTest do
   @dataset_id "12345"
   @endpoint Application.get_env(:kaffe, :producer)[:endpoints]
 
+  import Record, only: [defrecord: 2, extract: 2]
+
+  defrecord :kafka_message,
+            extract(:kafka_message, from_lib: "kafka_protocol/include/kpro_public.hrl")
+
   setup_all do
     {:ok, _} =
       %{id: "12345"}
@@ -50,15 +55,15 @@ defmodule PressurizerTest do
   end
 
   defp fetch_and_unwrap(topic) do
-    {:ok, messages} = :brod.fetch(@endpoint, topic, 0, 0)
-    {:ok, messages2} = :brod.fetch(@endpoint, topic, 0, Enum.count(messages))
+    {:ok, {_, messages}} = :brod.fetch(@endpoint, topic, 0, 0)
+    {:ok, {_, messages2}} = :brod.fetch(@endpoint, topic, 0, Enum.count(messages))
 
     messages = messages ++ messages2
 
     messages
-    |> Enum.map(fn {:kafka_message, _, _, _, key, body, _, _, _} ->
-      {key, body}
+    |> Enum.map(fn message ->
+      kafka_message(message, :value)
     end)
-    |> Enum.map(fn {_key, body} -> Jason.decode!(body, keys: :atoms) end)
+    |> Enum.map(fn body -> Jason.decode!(body, keys: :atoms) end)
   end
 end
