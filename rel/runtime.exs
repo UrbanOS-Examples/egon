@@ -41,9 +41,5 @@ config :kaffe,
 config :prestige,
   base_url: presto_url
 
-[
-  producer: [
-    topics: ["streaming-raw"],
-    endpoints: ["streaming-service-kafka-bootstrap.streaming-prime": 9092]
-  ]
-]
+config :egon,
+  kafka_endpoints: endpoints
