@@ -20,7 +20,7 @@ defmodule Egon.MixProject do
 
   defp deps do
     [
-      {:distillery, "~> 2.0"},
+      {:distillery, "2.0.12"},
       {:redix, "~> 0.9.3"},
       {:jason, "~>1.1"},
       {:tesla, "~> 1.2"},
