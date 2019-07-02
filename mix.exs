@@ -11,7 +11,6 @@ defmodule Egon.MixProject do
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger],
@@ -19,7 +18,6 @@ defmodule Egon.MixProject do
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:distillery, "~> 2.0"},
@@ -27,13 +25,13 @@ defmodule Egon.MixProject do
       {:jason, "~>1.1"},
       {:tesla, "~> 1.2"},
       {:kaffe, "~> 1.13"},
-      {:elsa, "~> 0.1.0"},
+      {:elsa, "~> 0.5.0"},
       {:smart_city_data, "~> 2.1"},
-      {:smart_city_registry, "~> 2.6"},
-      {:smart_city_test, "~> 0.2.0"},
+      {:smart_city_registry, "~> 3.3"},
+      {:smart_city_test, "~> 0.3"},
       {:prestige, "~> 0.3"},
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
-      {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
+      {:divo_kafka, "~> 0.1", only: [:dev, :test, :integration]},
       {:divo_redis, "~> 0.1", only: [:dev, :integration]},
       {:credo, "~> 1.0", only: [:dev, :test, :integration], runtime: false}
     ]
