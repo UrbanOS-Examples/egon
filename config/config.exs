@@ -27,7 +27,7 @@ config :egon,
      ]},
     DivoRedis
   ],
-  divo_wait: [dwell: 700, max_tries: 50]
+  divo_wait: [dwell: 500, max_tries: 240]
 
 config :egon,
   kafka_endpoints: endpoint
